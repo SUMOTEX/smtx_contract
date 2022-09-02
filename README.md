@@ -1,0 +1,1 @@
+# SMTX Token Contract

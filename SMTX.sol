@@ -3,7 +3,6 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20SnapshotUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 pragma solidity ^0.8.0;
@@ -13,8 +12,7 @@ contract SMTXToken is
     ContextUpgradeable,
     ERC20Upgradeable,
     OwnableUpgradeable,
-    PausableUpgradeable,
-    ERC20Snapshot
+    PausableUpgradeable
 {
     using SafeMath for uint256;
     string private _name;

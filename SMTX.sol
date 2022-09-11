@@ -21,7 +21,6 @@ contract SMTXToken is
     uint256 private _totalSupply;
     uint256 private _initialSupply;
     mapping(address => bool) public blacklisted;
-    mapping(address => mapping(address => uint256)) internal _allowances;
 
     function initialize() public initializer {
         __ERC20_init("SUMOTEX", "SMTX");
@@ -72,7 +71,6 @@ contract SMTXToken is
     ) public override whenNotPaused returns (bool) {
         address spender = _msgSender();
         require(to != address(0));
-        require(amount <= _allowances[from][msg.sender]);
         require(msg.data.length == 68);
         require(blacklisted[msg.sender] != true);
         _spendAllowance(from, spender, amount);
@@ -85,18 +83,6 @@ contract SMTXToken is
         _mint(to, amount * 10**uint256(decimals()));
         _initialSupply += amount;
         emit Transfer(address(this), msg.sender, amount);
-    }
-
-    function _approve(
-        address owner,
-        address spender,
-        uint256 amount
-    ) internal virtual override {
-        require(owner != address(0), "ERC20: approve from the zero address");
-        require(spender != address(0), "ERC20: approve to the zero address");
-
-        _allowances[owner][spender] = amount;
-        emit Approval(owner, spender, amount);
     }
 
     function addblackListUser(address _blacklistUser)

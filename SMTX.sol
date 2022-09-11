@@ -21,7 +21,6 @@ contract SMTXToken is
     uint256 private _totalSupply;
     uint256 private _initialSupply;
     mapping(address => bool) public blacklisted;
-    mapping(address => uint256) private _balances;
     mapping(address => mapping(address => uint256)) internal _allowances;
 
     function initialize() public initializer {
@@ -29,7 +28,7 @@ contract SMTXToken is
         __Ownable_init();
         __Pausable_init();
         _totalSupply = 1000000000 * 10**uint256(decimals());
-        _mint(msg.sender, 200000000 * 10**uint256(decimals()));
+        mint(msg.sender, 200000000);
     }
 
     /**
@@ -38,7 +37,9 @@ contract SMTXToken is
     function totalSupply() public view override returns (uint256) {
         return _totalSupply;
     }
-
+    function initialSupply() public view returns (uint256) {
+        return _initialSupply;
+    }
     /**
      * @dev transfer token for a specified address
      * @param _to The address to transfer to.
@@ -51,47 +52,31 @@ contract SMTXToken is
         returns (bool)
     {
         require(_to != address(0));
-        require(_value <= _balances[msg.sender]);
         require(blacklisted[msg.sender] != true);
-
-        // SafeMath.sub will throw if there is not enough balance.
-        _balances[msg.sender] = _balances[msg.sender].sub(_value);
-        _balances[_to] = _balances[_to].add(_value);
+        address owner = _msgSender();
+        _transfer(owner, _to, _value);
         emit Transfer(msg.sender, _to, _value);
         return true;
     }
 
-    function balanceOf(address _owner)
-        public
-        view
-        override
-        returns (uint256 balance)
-    {
-        return _balances[_owner];
-    }
-
     /**
      * @dev Transfer tokens from one address to another
-     * @param _from address The address which you want to send tokens from
-     * @param _to address The address which you want to transfer to
-     * @param _value uint256 the amount of tokens to be transferred
+     * @param from address The address which you want to send tokens from
+     * @param to address The address which you want to transfer to
+     * @param amount uint256 the amount of tokens to be transferred
      */
     function transferFrom(
-        address _from,
-        address _to,
-        uint256 _value
+        address from,
+        address to,
+        uint256 amount
     ) public override whenNotPaused returns (bool) {
-        require(_to != address(0));
-        require(_value <= _balances[_from]);
-        require(_value <= _allowances[_from][msg.sender]);
+        address spender = _msgSender();
+        require(to != address(0));
+        require(amount <= _allowances[from][msg.sender]);
         require(msg.data.length == 68);
         require(blacklisted[msg.sender] != true);
-        _balances[_from] = _balances[_from].sub(_value);
-        _balances[_to] = _balances[_to].add(_value);
-        _allowances[_from][msg.sender] = _allowances[_from][msg.sender].sub(
-            _value
-        );
-        emit Transfer(_from, _to, _value);
+        _spendAllowance(from, spender, amount);
+        _transfer(from, to, amount);
         return true;
     }
 
@@ -99,7 +84,7 @@ contract SMTXToken is
         require(_initialSupply + amount <= _totalSupply);
         _mint(to, amount * 10**uint256(decimals()));
         _initialSupply += amount;
-        emit Transfer(address(0), msg.sender, amount);
+        emit Transfer(address(this), msg.sender, amount);
     }
 
     function _approve(
